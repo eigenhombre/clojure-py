@@ -4,29 +4,29 @@ from py.clojure.lang.mapentry import MapEntry
 import py.clojure.lang.rt as RT
 
 
-def hashCombine(hash, seed):
+def hashCombine(hash, seed):###FIXME: hash unused?
     seed ^= seed + 0x9e3779b9 + (seed << 6) + (seed >> 2)
     return seed
 
 
 def hasheq(o):
-    raise AbstractMethodCall(self)
+    raise AbstractMethodCall(self)### FIXME: self should be o?
 
 
-def conjToAssoc(self, o):### FIXME: self outside class?!
+def conjToAssoc(coll, o):
     if isinstance(o, MapEntry):
-        return self.assoc(o.getKey(), o.getValue())
+        return coll.assoc(o.getKey(), o.getValue())
     if hasattr(o, "__getitem__") and hasattr(o, "__len__"):
         if len(o) != 2:
             raise InvalidArgumentException("Vector arg must be a pair")
-        return self.assoc(o[0], o[1])
+        return coll.assoc(o[0], o[1])
 
     s = RT.seq(o)
-    map = self
+    map_ = coll
     for s in s.interator():
         m = s.first()
-        map = map.assoc(m.getKey(), m.getValue())
-    return map
+        map_ = map_.assoc(m.getKey(), m.getValue())
+    return map_
 
 
 def bitCount(i):

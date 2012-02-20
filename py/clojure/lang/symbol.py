@@ -44,7 +44,7 @@ class Symbol(object, IObj):
             return self.ns + "/" + self.name
 
     @staticmethod
-    def intern(*args):
+    def intern(*args):###FIXME: static method should receive cls as first arg?
         if len(args) == 1:
             a = args[0]
             if isinstance(a, Symbol):
@@ -55,7 +55,6 @@ class Symbol(object, IObj):
             else:
                 return Symbol(a[idx:], a[:idx + 1])
 
-            return Symbol(null, )# FIXME: null?!
         elif len(args) == 2:
             return Symbol(args[0], args[1])
         else:

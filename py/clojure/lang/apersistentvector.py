@@ -22,33 +22,30 @@ class APersistentVector(object, IPersistentVector):
 
 
 class SubVec(APersistentVector):
-    '''
-    FIXME: several bugs in here, marked ##
-    '''
     def __init__(self, meta, v, start, end):
         self._meta = meta
         if isinstance(v, SubVec):
             start += v.start
-            end += sv.start###
-            v = sv.v###
+            end += v.start
+            v = v.v
         self.v = v
         self.start = start
         self.end = end
 
     def nth(self, i):
-        if self.start + i >= end:###
+        if self.start + i >= self.end:
             raise Exception("Index out of range")
-        return v.nth(self.start + i)
+        return v.nth(self.start + i)### FIXME: v defined where?
 
     def assocN(self, i, val):
-        if start + i > end:###
+        if self.start + i > self.end:
             raise Exception("Index out of range")
-        elif start + i == end:###
+        elif self.start + i == self.end:
             return self.cons(val)
         return SubVec(self._meta,
                       self.v.assocN(self.start + self.i, val),
-                      start,###
-                      end)###
+                      self.start,
+                      self.end)
 
     def __len__(self):
         return self.end - self.start
