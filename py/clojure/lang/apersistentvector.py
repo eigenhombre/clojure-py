@@ -1,6 +1,6 @@
 from py.clojure.lang.ipersistentvector import IPersistentVector
-from py.clojure.lang.cljexceptions import AbstractMethodCall, ArityException
 from py.clojure.lang.indexableseq import IndexableSeq
+
 
 class APersistentVector(object, IPersistentVector):
     def __iter__(self):
@@ -22,28 +22,33 @@ class APersistentVector(object, IPersistentVector):
 
 
 class SubVec(APersistentVector):
+    '''
+    FIXME: several bugs in here, marked ##
+    '''
     def __init__(self, meta, v, start, end):
         self._meta = meta
         if isinstance(v, SubVec):
             start += v.start
-            end += sv.start
-            v = sv.v
+            end += sv.start###
+            v = sv.v###
         self.v = v
         self.start = start
         self.end = end
+
     def nth(self, i):
-        if self.start + i >= end:
+        if self.start + i >= end:###
             raise Exception("Index out of range")
         return v.nth(self.start + i)
+
     def assocN(self, i, val):
-        if start + i > end:
+        if start + i > end:###
             raise Exception("Index out of range")
-        elif start + i == end:
+        elif start + i == end:###
             return self.cons(val)
         return SubVec(self._meta,
                       self.v.assocN(self.start + self.i, val),
-                      start,
-                      end)
+                      start,###
+                      end)###
 
     def __len__(self):
         return self.end - self.start
@@ -53,6 +58,7 @@ class SubVec(APersistentVector):
                       self.v.assocN(self.end, o),
                       self.start,
                       self.end + 1)
+
     def empty(self):
         from py.clojure.lang.persistentvector import EMPTY as EMPTY_VECTOR
         return EMPTY_VECTOR.withMeta(self.meta())

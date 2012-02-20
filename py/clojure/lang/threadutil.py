@@ -1,15 +1,13 @@
-from threading import Lock, local, currentThread
+from threading import Lock, local
+
 
 def synchronized(f):
     """ Synchronization decorator. """
     lock = Lock()
 
     def synchronized_closure(*args, **kw):
-        lock.acquire()
-        try:
+        with lock:
             return f(*args, **kw)
-        finally:
-            lock.release()
     return synchronized_closure
 
 
@@ -26,8 +24,8 @@ class ThreadLocal(local):
         self.value = value
 
 
-class AtomicInteger:
-    def __init__(self, v = 0):
+class AtomicInteger:### FIXME: old style class?!
+    def __init__(self, v=0):
         self.v = v
 
     def getAndIncrement(self):

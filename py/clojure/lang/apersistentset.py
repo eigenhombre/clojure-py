@@ -1,7 +1,8 @@
 from py.clojure.lang.ifn import IFn
-from py.clojure.lang.cljexceptions import AbstractMethodCall, ArityException
+from py.clojure.lang.cljexceptions import ArityException
 from py.clojure.lang.ipersistentset import IPersistentSet
 import py.clojure.lang.rt as RT
+
 
 class APersistentSet(object, IPersistentSet, IFn):
     def __init__(self, impl):

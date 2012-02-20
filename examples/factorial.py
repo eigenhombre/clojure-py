@@ -1,6 +1,3 @@
-
-
-
 def fact (x):
     f = 1
     n = x
@@ -23,5 +20,3 @@ def test(times):
             return
 
 test(20)
-
-

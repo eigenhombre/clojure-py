@@ -53,9 +53,9 @@ class Symbol(object, IObj):
             if idx == -1 or a == "/":
                 return Symbol(None, intern(a))
             else:
-                return Symbol(a[idx:], a[:idx+1])
+                return Symbol(a[idx:], a[:idx + 1])
 
-            return Symbol(null, )
+            return Symbol(null, )# FIXME: null?!
         elif len(args) == 2:
             return Symbol(args[0], args[1])
         else:

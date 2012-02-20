@@ -12,9 +12,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+# You should have received a copy of the GNU Lesser General Public License
+# along with this library; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 # Many thanks to Greg X for adding support for Python 2.6 and 2.7!
 
@@ -42,13 +42,15 @@ from cStringIO import StringIO
 
 python_version = '.'.join(str(x) for x in sys.version_info[:2])
 if python_version not in ('2.4', '2.5', '2.6', '2.7'):
-    warnings.warn("byteplay doesn't support Python version "+python_version)
+    warnings.warn("byteplay doesn't support Python version " + python_version)
+
 
 class Opcode(int):
     """An int which represents an opcode - has a nicer repr."""
     def __repr__(self):
         return opname[self]
     __str__ = __repr__
+
 
 class CodeList(list):
     """A list for storing opcode tuples - has a nicer __str__."""
@@ -57,17 +59,20 @@ class CodeList(list):
         printcodelist(self, f)
         return f.getvalue()
 
+
 opmap = dict((name.replace('+', '_'), Opcode(code))
 for name, code in opcode.opmap.iteritems()
 if name != 'EXTENDED_ARG')
 opname = dict((code, name) for name, code in opmap.iteritems())
 opcodes = set(opname)
 
+
 def globalize_opcodes():
     for name, code in opmap.iteritems():
         globals()[name] = code
         __all__.append(name)
 globalize_opcodes()
+
 
 cmp_op = opcode.cmp_op
 
@@ -82,79 +87,81 @@ hascompare = set(Opcode(x) for x in opcode.hascompare)
 hasfree = set(Opcode(x) for x in opcode.hasfree)
 hascode = set([MAKE_FUNCTION, MAKE_CLOSURE])
 
+
 class _se:
     """Quick way of defining static stack effects of opcodes"""
     # Taken from assembler.py by Phillip J. Eby
-    NOP       = 0,0
+    NOP = 0, 0
 
-    POP_TOP   = 1,0
-    ROT_TWO   = 2,2
-    ROT_THREE = 3,3
-    ROT_FOUR  = 4,4
-    DUP_TOP   = 1,2
+    POP_TOP = 1, 0
+    ROT_TWO = 2, 2
+    ROT_THREE = 3, 3
+    ROT_FOUR = 4, 4
+    DUP_TOP = 1, 2
 
     UNARY_POSITIVE = UNARY_NEGATIVE = UNARY_NOT = UNARY_CONVERT =\
-    UNARY_INVERT = GET_ITER = LOAD_ATTR = 1,1
+    UNARY_INVERT = GET_ITER = LOAD_ATTR = 1, 1
 
-    IMPORT_FROM = 1,2
+    IMPORT_FROM = 1, 2
 
     BINARY_POWER = BINARY_MULTIPLY = BINARY_DIVIDE = BINARY_FLOOR_DIVIDE =\
     BINARY_TRUE_DIVIDE = BINARY_MODULO = BINARY_ADD = BINARY_SUBTRACT =\
     BINARY_SUBSCR = BINARY_LSHIFT = BINARY_RSHIFT = BINARY_AND =\
-    BINARY_XOR = BINARY_OR = COMPARE_OP = 2,1
+    BINARY_XOR = BINARY_OR = COMPARE_OP = 2, 1
 
     INPLACE_POWER = INPLACE_MULTIPLY = INPLACE_DIVIDE =\
     INPLACE_FLOOR_DIVIDE = INPLACE_TRUE_DIVIDE = INPLACE_MODULO =\
     INPLACE_ADD = INPLACE_SUBTRACT = INPLACE_LSHIFT = INPLACE_RSHIFT =\
-    INPLACE_AND = INPLACE_XOR = INPLACE_OR = 2,1
+    INPLACE_AND = INPLACE_XOR = INPLACE_OR = 2, 1
 
     SLICE_0, SLICE_1, SLICE_2, SLICE_3 =\
-    (1,1),(2,1),(2,1),(3,1)
+    (1, 1), (2, 1), (2, 1), (3, 1)
     STORE_SLICE_0, STORE_SLICE_1, STORE_SLICE_2, STORE_SLICE_3 =\
-    (2,0),(3,0),(3,0),(4,0)
+    (2, 0), (3, 0), (3, 0), (4, 0)
     DELETE_SLICE_0, DELETE_SLICE_1, DELETE_SLICE_2, DELETE_SLICE_3 =\
-    (1,0),(2,0),(2,0),(3,0)
+    (1, 0), (2, 0), (2, 0), (3, 0)
 
-    STORE_SUBSCR = 3,0
-    DELETE_SUBSCR = STORE_ATTR = 2,0
-    DELETE_ATTR = STORE_DEREF = 1,0
-    PRINT_NEWLINE = 0,0
-    PRINT_EXPR = PRINT_ITEM = PRINT_NEWLINE_TO = IMPORT_STAR = 1,0
-    STORE_NAME = STORE_GLOBAL = STORE_FAST = 1,0
-    PRINT_ITEM_TO = 2,0
+    STORE_SUBSCR = 3, 0
+    DELETE_SUBSCR = STORE_ATTR = 2, 0
+    DELETE_ATTR = STORE_DEREF = 1, 0
+    PRINT_NEWLINE = 0, 0
+    PRINT_EXPR = PRINT_ITEM = PRINT_NEWLINE_TO = IMPORT_STAR = 1, 0
+    STORE_NAME = STORE_GLOBAL = STORE_FAST = 1, 0
+    PRINT_ITEM_TO = 2, 0
 
     LOAD_LOCALS = LOAD_CONST = LOAD_NAME = LOAD_GLOBAL = LOAD_FAST =\
-    LOAD_CLOSURE = LOAD_DEREF = BUILD_MAP = 0,1
+    LOAD_CLOSURE = LOAD_DEREF = BUILD_MAP = 0, 1
 
-    DELETE_FAST = DELETE_GLOBAL = DELETE_NAME = 0,0
+    DELETE_FAST = DELETE_GLOBAL = DELETE_NAME = 0, 0
 
-    EXEC_STMT = 3,0
-    BUILD_CLASS = 3,1
+    EXEC_STMT = 3, 0
+    BUILD_CLASS = 3, 1
 
-    STORE_MAP = MAP_ADD = 2,0
-    SET_ADD = 1,0
+    STORE_MAP = MAP_ADD = 2, 0
+    SET_ADD = 1, 0
 
     if   python_version == '2.4':
-        YIELD_VALUE = 1,0
-        IMPORT_NAME = 1,1
-        LIST_APPEND = 2,0
+        YIELD_VALUE = 1, 0
+        IMPORT_NAME = 1, 1
+        LIST_APPEND = 2, 0
     elif python_version == '2.5':
-        YIELD_VALUE = 1,1
-        IMPORT_NAME = 2,1
-        LIST_APPEND = 2,0
+        YIELD_VALUE = 1, 1
+        IMPORT_NAME = 2, 1
+        LIST_APPEND = 2, 0
     elif python_version == '2.6':
-        YIELD_VALUE = 1,1
-        IMPORT_NAME = 2,1
-        LIST_APPEND = 2,0
+        YIELD_VALUE = 1, 1
+        IMPORT_NAME = 2, 1
+        LIST_APPEND = 2, 0
     elif python_version == '2.7':
-        YIELD_VALUE = 1,1
-        IMPORT_NAME = 2,1
-        LIST_APPEND = 1,0
+        YIELD_VALUE = 1, 1
+        IMPORT_NAME = 2, 1
+        LIST_APPEND = 1, 0
 
 
 _se = dict((op, getattr(_se, opname[op]))
-for op in opcodes
-if hasattr(_se, opname[op]))
+           for op in opcodes
+           if hasattr(_se, opname[op]))
+
 
 hasflow = opcodes - set(_se) -\
           set([CALL_FUNCTION, CALL_FUNCTION_VAR, CALL_FUNCTION_KW,
@@ -163,6 +170,7 @@ hasflow = opcodes - set(_se) -\
                RAISE_VARARGS, MAKE_FUNCTION, MAKE_CLOSURE])
 if python_version == '2.7':
     hasflow = hasflow - set([BUILD_SET])
+
 
 def getse(op, arg=None):
     """Get the stack effect of an opcode, as a (pop, push) tuple.
@@ -178,12 +186,12 @@ def getse(op, arg=None):
         pass
 
     if arg is None:
-        raise ValueError, "Opcode stack behaviour depends on arg"
+        raise ValueError("Opcode stack behaviour depends on arg")
 
     def get_func_tup(arg, nextra):
         if arg > 0xFFFF:
-            raise ValueError, "Can only split a two-byte argument"
-        return (nextra + 1 + (arg & 0xFF) + 2*((arg >> 8) & 0xFF),
+            raise ValueError("Can only split a two-byte argument")
+        return (nextra + 1 + (arg & 0xFF) + 2 * ((arg >> 8) & 0xFF),
                 1)
 
     if op == CALL_FUNCTION:
@@ -194,7 +202,6 @@ def getse(op, arg=None):
         return get_func_tup(arg, 1)
     elif op == CALL_FUNCTION_VAR_KW:
         return get_func_tup(arg, 2)
-
     elif op == BUILD_TUPLE:
         return arg, 1
     elif op == BUILD_LIST:
@@ -206,51 +213,57 @@ def getse(op, arg=None):
     elif op == BUILD_SLICE:
         return arg, 1
     elif op == DUP_TOPX:
-        return arg, arg*2
+        return arg, arg * 2
     elif op == RAISE_VARARGS:
-        return 1+arg, 1
+        return 1 + arg, 1
     elif op == MAKE_FUNCTION:
-        return 1+arg, 1
+        return 1 + arg, 1
     elif op == MAKE_CLOSURE:
         if python_version == '2.4':
-            raise ValueError, "The stack effect of MAKE_CLOSURE depends on TOS"
+            raise ValueError("The stack effect of MAKE_CLOSURE depends on TOS")
         else:
-            return 2+arg, 1
+            return 2 + arg, 1
     else:
-        raise ValueError, "The opcode %r isn't recognized or has a special "\
-                          "flow control" % op
+        raise ValueError("The opcode %r isn't recognized or has a special "
+                         "flow control" % op)
+
 
 class SetLinenoType(object):
     def __repr__(self):
         return 'SetLineno'
+
 SetLineno = SetLinenoType()
 
+
 class Label(object):
-    def __init__(self, name = None):
+    def __init__(self, name=None):
         self.name = name
+
     def __repr__(self):
         return "Label: " + str(self.name)
+
     def __eq__(self, other):
         return isinstance(other, Label) and self.name == other.name
+
 
 def isopcode(obj):
     """Return whether obj is an opcode - not SetLineno or Label"""
     return obj is not SetLineno and not isinstance(obj, Label)
 
 # Flags from code.h
-CO_OPTIMIZED              = 0x0001      # use LOAD/STORE_FAST instead of _NAME
-CO_NEWLOCALS              = 0x0002      # only cleared for module/exec code
-CO_VARARGS                = 0x0004
-CO_VARKEYWORDS            = 0x0008
-CO_NESTED                 = 0x0010      # ???
-CO_GENERATOR              = 0x0020
-CO_NOFREE                 = 0x0040      # set if no free or cell vars
-CO_GENERATOR_ALLOWED      = 0x1000      # unused
+CO_OPTIMIZED = 0x0001              # use LOAD/STORE_FAST instead of _NAME
+CO_NEWLOCALS = 0x0002              # only cleared for module/exec code
+CO_VARARGS = 0x0004
+CO_VARKEYWORDS = 0x0008
+CO_NESTED = 0x0010                 # ???
+CO_GENERATOR = 0x0020
+CO_NOFREE = 0x0040                 # set if no free or cell vars
+CO_GENERATOR_ALLOWED = 0x1000      # unused
 # The future flags are only used on code generation, so we can ignore them.
 # (It does cause some warnings, though.)
-CO_FUTURE_DIVISION        = 0x2000
+CO_FUTURE_DIVISION = 0x2000
 CO_FUTURE_ABSOLUTE_IMPORT = 0x4000
-CO_FUTURE_WITH_STATEMENT  = 0x8000
+CO_FUTURE_WITH_STATEMENT = 0x8000
 
 
 ######################################################################
@@ -266,7 +279,8 @@ class Code(object):
     ----------------
     code - list of 2-tuples: the code
     freevars - list of strings: the free vars of the code (those are names
-               of variables created in outer functions and used in the function)
+               of variables created in outer functions and used in the
+               function)
     args - list of strings: the arguments of the code
     varargs - boolean: Does args end with a '*args' argument
     varkwargs - boolean: Does args end with a '**kwargs' argument
@@ -343,13 +357,14 @@ class Code(object):
             if op in hascode:
                 lastop, lastarg = code[-1]
                 if lastop != LOAD_CONST:
-                    raise ValueError,\
-                    "%s should be preceded by LOAD_CONST code" % op
+                    raise ValueError("%s should be preceded by LOAD_CONST "
+                                     "code" % op)
                 code[-1] = (LOAD_CONST, Code.from_code(lastarg))
             if op not in hasarg:
                 code.append((op, None))
             else:
-                arg = ord(co_code[i]) + ord(co_code[i+1])*256 + extended_arg
+                arg = (ord(co_code[i]) + ord(co_code[i + 1]) * 256
+                       + extended_arg)
                 extended_arg = 0
                 i += 2
                 if op == opcode.EXTENDED_ARG:
@@ -379,17 +394,16 @@ class Code(object):
             docstring = co.co_consts[0]
         else:
             docstring = None
-        return cls(code = code,
-            freevars = co.co_freevars,
-            args = args,
-            varargs = varargs,
-            varkwargs = varkwargs,
-            newlocals = newlocals,
-            name = co.co_name,
-            filename = co.co_filename,
-            firstlineno = co.co_firstlineno,
-            docstring = docstring,
-        )
+        return cls(code=code,
+                   freevars=co.co_freevars,
+                   args=args,
+                   varargs=varargs,
+                   varkwargs=varkwargs,
+                   newlocals=newlocals,
+                   name=co.co_name,
+                   filename=co.co_filename,
+                   firstlineno=co.co_firstlineno,
+                   docstring=docstring)
 
     def __eq__(self, other):
         if (self.freevars != other.freevars or
@@ -433,12 +447,18 @@ class Code(object):
         nofree = not (opcodes.intersection(hasfree))
 
         flags = 0
-        if optimized: flags |= CO_OPTIMIZED
-        if self.newlocals: flags |= CO_NEWLOCALS
-        if self.varargs: flags |= CO_VARARGS
-        if self.varkwargs: flags |= CO_VARKEYWORDS
-        if generator: flags |= CO_GENERATOR
-        if nofree: flags |= CO_NOFREE
+        if optimized:
+            flags |= CO_OPTIMIZED
+        if self.newlocals:
+            flags |= CO_NEWLOCALS
+        if self.varargs:
+            flags |= CO_VARARGS
+        if self.varkwargs:
+            flags |= CO_VARKEYWORDS
+        if generator:
+            flags |= CO_GENERATOR
+        if nofree:
+            flags |= CO_NOFREE
         return flags
 
     def _compute_stacksize(self):
@@ -452,13 +472,13 @@ class Code(object):
         for pos, (op, arg) in enumerate(code)
         if isinstance(op, Label))
 
-        # sf_targets are the targets of SETUP_FINALLY opcodes. They are recorded
-        # because they have special stack behaviour. If an exception was raised
-        # in the block pushed by a SETUP_FINALLY opcode, the block is popped
-        # and 3 objects are pushed. On return or continue, the block is popped
-        # and 2 objects are pushed. If nothing happened, the block is popped by
-        # a POP_BLOCK opcode and 1 object is pushed by a (LOAD_CONST, None)
-        # operation.
+        # sf_targets are the targets of SETUP_FINALLY opcodes. They are
+        # recorded because they have special stack behaviour. If an exception
+        # was raised in the block pushed by a SETUP_FINALLY opcode, the block
+        # is popped and 3 objects are pushed. On return or continue, the block
+        # is popped and 2 objects are pushed. If nothing happened, the block
+        # is popped by a POP_BLOCK opcode and 1 object is pushed by a
+        # (LOAD_CONST, None) operation.
         #
         # Our solution is to record the stack state of SETUP_FINALLY targets
         # as having 3 objects pushed, which is the maximum. However, to make
@@ -470,18 +490,20 @@ class Code(object):
         for op, arg in code
         if op == SETUP_FINALLY)
 
-        # What we compute - for each opcode, its stack state, as an n-tuple.
-        # n is the number of blocks pushed. For each block, we record the number
+        # What we compute - for each opcode, its stack state, as an n-tuple. n
+        # is the number of blocks pushed. For each block, we record the number
         # of objects pushed.
         stacks = [None] * len(code)
 
         def get_next_stacks(pos, curstack):
-            """Get a code position and the stack state before the operation
+            """
+            Get a code position and the stack state before the operation
             was done, and yield pairs (pos, curstack) for the next positions
             to be explored - those are the positions to which you can get
             from the given (pos, curstack).
 
-            If the given position was already explored, nothing will be yielded.
+            If the given position was already explored, nothing will be
+            yielded.
             """
             op, arg = code[pos]
 
@@ -494,77 +516,77 @@ class Code(object):
                     stacks[pos] = curstack
                 else:
                     if stacks[pos] != curstack:
-                        raise ValueError, "Inconsistent code"
+                        raise ValueError("Inconsistent code")
                     return
 
             def newstack(n):
                 # Return a new stack, modified by adding n elements to the last
                 # block
                 if curstack[-1] + n < 0:
-                    raise ValueError, "Popped a non-existing element"
-                return curstack[:-1] + (curstack[-1]+n,)
+                    raise ValueError("Popped a non-existing element")
+                return curstack[:-1] + (curstack[-1] + n,)
 
             if not isopcode(op):
                 # label or SetLineno - just continue to next line
-                yield pos+1, curstack
+                yield pos + 1, curstack
 
             elif op in (STOP_CODE, RETURN_VALUE, RAISE_VARARGS):
                 # No place in particular to continue to
                 pass
 
             elif op == MAKE_CLOSURE and python_version == '2.4':
-                # This is only relevant in Python 2.4 - in Python 2.5 the stack
-                # effect of MAKE_CLOSURE can be calculated from the arg.
+                # This is only relevant in Python 2.4 - in Python 2.5 the
+                # stack effect of MAKE_CLOSURE can be calculated from the arg.
                 # In Python 2.4, it depends on the number of freevars of TOS,
                 # which should be a code object.
                 if pos == 0:
-                    raise ValueError,\
-                    "MAKE_CLOSURE can't be the first opcode"
-                lastop, lastarg = code[pos-1]
+                    raise ValueError("MAKE_CLOSURE can't be the first opcode")
+                lastop, lastarg = code[pos - 1]
                 if lastop != LOAD_CONST:
-                    raise ValueError,\
-                    "MAKE_CLOSURE should come after a LOAD_CONST op"
+                    raise ValueError("MAKE_CLOSURE should come after a "
+                                     "LOAD_CONST op")
                 try:
                     nextrapops = len(lastarg.freevars)
                 except AttributeError:
                     try:
                         nextrapops = len(lastarg.co_freevars)
                     except AttributeError:
-                        raise ValueError,\
-                        "MAKE_CLOSURE preceding const should "\
-                        "be a code or a Code object"
-
-                yield pos+1, newstack(-arg-nextrapops)
+                        raise ValueError("MAKE_CLOSURE preceding const "
+                                         "should be a code or a Code object")
+                yield pos + 1, newstack(-arg - nextrapops)
 
             elif op not in hasflow:
                 # Simple change of stack
                 pop, push = getse(op, arg)
-                yield pos+1, newstack(push - pop)
+                yield pos + 1, newstack(push - pop)
 
             elif op in (JUMP_FORWARD, JUMP_ABSOLUTE):
                 # One possibility for a jump
                 yield label_pos[arg], curstack
 
-            elif python_version < '2.7' and op in (JUMP_IF_FALSE, JUMP_IF_TRUE):
+            elif python_version < '2.7' and op in (JUMP_IF_FALSE,
+                                                   JUMP_IF_TRUE):
                 # Two possibilities for a jump
                 yield label_pos[arg], curstack
-                yield pos+1, curstack
+                yield pos + 1, curstack
 
-            elif python_version >= '2.7' and op in (POP_JUMP_IF_FALSE, POP_JUMP_IF_TRUE):
+            elif python_version >= '2.7' and op in (POP_JUMP_IF_FALSE,
+                                                    POP_JUMP_IF_TRUE):
                 # Two possibilities for a jump
                 yield label_pos[arg], newstack(-1)
-                yield pos+1, newstack(-1)
+                yield pos + 1, newstack(-1)
 
-            elif python_version >= '2.7' and op in (JUMP_IF_TRUE_OR_POP, JUMP_IF_FALSE_OR_POP):
+            elif python_version >= '2.7' and op in (JUMP_IF_TRUE_OR_POP,
+                                                    JUMP_IF_FALSE_OR_POP):
                 # Two possibilities for a jump
                 yield label_pos[arg], curstack
-                yield pos+1, newstack(-1)
+                yield pos + 1, newstack(-1)
 
             elif op == FOR_ITER:
                 # FOR_ITER pushes next(TOS) on success, and pops TOS and jumps
                 # on failure
                 yield label_pos[arg], newstack(-1)
-                yield pos+1, newstack(1)
+                yield pos + 1, newstack(1)
 
             elif op == BREAK_LOOP:
                 # BREAK_LOOP jumps to a place specified on block creation, so
@@ -577,8 +599,9 @@ class Code(object):
                 # It pops a block.
                 if python_version == '2.6':
                     pos, stack = label_pos[arg], curstack[:-1]
-                    if stacks[pos] != stack: #this could be a loop with a 'with' inside
-                        yield pos, stack[:-1] + (stack[-1]-1,)
+                    # this could be a loop with a 'with' inside:
+                    if stacks[pos] != stack:
+                        yield pos, stack[:-1] + (stack[-1] - 1,)
                     else:
                         yield pos, stack
                 else:
@@ -589,14 +612,14 @@ class Code(object):
                 # On break, we jump to the label and return to current stack
                 # state.
                 yield label_pos[arg], curstack
-                yield pos+1, curstack + (0,)
+                yield pos + 1, curstack + (0,)
 
             elif op == SETUP_EXCEPT:
                 # We continue with a new block.
                 # On exception, we jump to the label with 3 extra objects on
                 # stack
                 yield label_pos[arg], newstack(3)
-                yield pos+1, curstack + (0,)
+                yield pos + 1, curstack + (0,)
 
             elif op == SETUP_FINALLY:
                 # We continue with a new block.
@@ -605,20 +628,20 @@ class Code(object):
                 # if we add only 1 object. Extra 2 will be added to the actual
                 # recording.
                 yield label_pos[arg], newstack(1)
-                yield pos+1, curstack + (0,)
+                yield pos + 1, curstack + (0,)
 
             elif python_version == '2.7' and op == SETUP_WITH:
                 yield label_pos[arg], curstack
-                yield pos+1, newstack(-1) + (1,)
+                yield pos + 1, newstack(-1) + (1,)
 
             elif op == POP_BLOCK:
                 # Just pop the block
-                yield pos+1, curstack[:-1]
+                yield pos + 1, curstack[:-1]
 
             elif op == END_FINALLY:
                 # Since stack recording of SETUP_FINALLY targets is of 3 pushed
                 # objects (as when an exception is raised), we pop 3 objects.
-                yield pos+1, newstack(-3)
+                yield pos + 1, newstack(-3)
 
             elif op == WITH_CLEANUP:
                 # Since WITH_CLEANUP is always found after SETUP_FINALLY
@@ -626,13 +649,12 @@ class Code(object):
                 # exception, we can simply pop 1 object and let END_FINALLY
                 # pop the remaining 3.
                 if python_version == '2.7':
-                    yield pos+1, newstack(2)
+                    yield pos + 1, newstack(2)
                 else:
-                    yield pos+1, newstack(-1)
+                    yield pos + 1, newstack(-1)
 
             else:
                 assert False, "Unhandled opcode: %r" % op
-
 
         # Now comes the calculation: open_positions holds positions which are
         # yet to be explored. In each step we take one open position, and
@@ -685,7 +707,7 @@ class Code(object):
                     seq.append(item)
                     return len(seq) - 1
                 else:
-                    raise IndexError, "Item not found"
+                    raise IndexError("Item not found")
 
         # List of tuples (pos, label) to be filled later
         jumps = []
@@ -725,15 +747,15 @@ class Code(object):
                         co_lnotab.append(incr_lineno)
 
             elif op == opcode.EXTENDED_ARG:
-                raise ValueError, "EXTENDED_ARG not supported in Code objects"
+                raise ValueError("EXTENDED_ARG not supported in Code objects")
 
             elif not op in hasarg:
                 co_code.append(op)
 
             else:
                 if op in hasconst:
-                    if isinstance(arg, Code) and i < len(self.code)-1 and\
-                       self.code[i+1][0] in hascode:
+                    if isinstance(arg, Code) and i < len(self.code) - 1 and\
+                       self.code[i + 1][0] in hascode:
                         arg = arg.to_code()
                     arg = index(co_consts, arg, operator.is_)
                 elif op in hasname:
@@ -767,11 +789,11 @@ class Code(object):
         for pos, label in jumps:
             jump = label_pos[label]
             if co_code[pos] in hasjrel:
-                jump -= pos+3
+                jump -= pos + 3
             if jump > 0xFFFF:
-                raise NotImplementedError, "Extended jumps not implemented"
-            co_code[pos+1] = jump & 0xFF
-            co_code[pos+2] = (jump >> 8) & 0xFF
+                raise NotImplementedError("Extended jumps not implemented")
+            co_code[pos + 1] = jump & 0xFF
+            co_code[pos + 2] = (jump >> 8) & 0xFF
 
         co_code = co_code.tostring()
         co_lnotab = co_lnotab.tostring()
@@ -845,9 +867,12 @@ def printcodelist(codelist, to=sys.stdout):
             op,
             argstr)
 
+
 def recompile(filename):
-    """Create a .pyc by disassembling the file and assembling it again, printing
-    a message that the reassembled file was loaded."""
+    """
+    Create a .pyc by disassembling the file and assembling it again, printing
+    a message that the reassembled file was loaded.
+    """
     # Most of the code here based on the compile.py module.
     import os
     import imp
@@ -870,7 +895,7 @@ def recompile(filename):
         return
     cod = Code.from_code(codeobject)
     message = "reassembled %r imported.\n" % filename
-    cod.code[:0] = [ # __import__('sys').stderr.write(message)
+    cod.code[:0] = [  # __import__('sys').stderr.write(message)
         (LOAD_GLOBAL, '__import__'),
         (LOAD_CONST, 'sys'),
         (CALL_FUNCTION, 1),
@@ -881,7 +906,7 @@ def recompile(filename):
         (POP_TOP, None),
                      ]
     codeobject2 = cod.to_code()
-    fc = open(filename+'c', 'wb')
+    fc = open(filename + 'c', 'wb')
     fc.write('\0\0\0\0')
     fc.write(struct.pack('<l', timestamp))
     marshal.dump(codeobject2, fc)
@@ -889,6 +914,7 @@ def recompile(filename):
     fc.seek(0, 0)
     fc.write(imp.get_magic())
     fc.close()
+
 
 def recompile_all(path):
     """recursively recompile all .py files in the directory"""
@@ -903,6 +929,7 @@ def recompile_all(path):
     else:
         filename = os.path.abspath(path)
         recompile(filename)
+
 
 def main():
     import os
@@ -919,11 +946,12 @@ Use it to test byteplay like this:
 
 Some FutureWarnings may be raised, but that's expected.
 
-Tip: before doing this, check to see which tests fail even without reassembling
-them...
+Tip: before doing this, check to see which tests fail even without
+reassembling them...
 """ % sys.argv[0]
         sys.exit(1)
     recompile_all(sys.argv[1])
+
 
 if __name__ == '__main__':
     main()

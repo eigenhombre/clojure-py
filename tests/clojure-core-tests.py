@@ -45,7 +45,8 @@ class ClojureCoreTests(unittest.TestCase):
     def testCons(self):
         self.assertEqual(self.eval('(cons 1 nil)'), [1])
         self.assertEqual(self.eval('(cons 1 [2])'), [1, 2])
-        self.assertEqual(self.eval('(cons 1 (cons 2 (cons 3 nil)))'), [1, 2, 3])
+        self.assertEqual(self.eval('(cons 1 (cons 2 (cons 3 nil)))'),
+                         [1, 2, 3])
 
     def testSeq(self):
         self.assertEqual(self.eval('(seq [])'), None)
@@ -59,3 +60,7 @@ class ClojureCoreTests(unittest.TestCase):
         self.assertEqual(self.eval('(next [1 2])'), [2])
         self.assertEqual(self.eval('(next nil)'), None)
 
+
+class TestCoreObjects(unittest.TestCase):
+    def test(self):
+        pass

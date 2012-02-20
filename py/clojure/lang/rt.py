@@ -1,25 +1,27 @@
-from py.clojure.lang.cljexceptions import AbstractMethodCall, InvalidArgumentException
+from py.clojure.lang.cljexceptions import InvalidArgumentException
 from py.clojure.lang.comparator import Comparator
 from py.clojure.lang.threadutil import AtomicInteger
 
-from py.clojure.lang.iseq import ISeq
 
 mapInter = map
 _list = list
+
 
 def setMeta(f, meta):
     setattr(f, "meta", lambda: meta)
     return f
 
+
 def cons(x, s):
     from py.clojure.lang.cons import Cons
-    from py.clojure.lang.persistentlist import PersistentList, EMPTY as EMPTY_LIST
+    from py.clojure.lang.persistentlist import EMPTY as EMPTY_LIST
     from py.clojure.lang.iseq import ISeq
     if isinstance(s, ISeq):
         return Cons(x, s)
     if s is None:
         return EMPTY_LIST.cons(x)
     return Cons(x, seq(s))
+
 
 def seqToTuple(s):
     if s is None:
@@ -28,13 +30,14 @@ def seqToTuple(s):
         return s
     if isinstance(s, IPersistentVector):
         return tuple(s)
-    return tuple(mapInter(lambda x: x.first(),s))
+    return tuple(mapInter(lambda x: x.first(), s))
+
 
 def seq(obj):
     from py.clojure.lang.indexableseq import IndexableSeq
     from py.clojure.lang.symbol import Symbol
     from py.clojure.lang.aseq import ASeq
-    
+
     if isinstance(obj, Symbol):
         pass
     if obj is None:
@@ -47,24 +50,30 @@ def seq(obj):
         return IndexableSeq(obj, 0)
     return obj.seq()
 
+
 def first(obj):
     return seq(obj).first()
 
+
 def applyTo(fn, args):
-    return apply(fn, tuple(map(lambda x: x.first(),args)))
+    return apply(fn, tuple(map(lambda x: x.first(), args)))
+
 
 def booleanCast(obj):
     if isinstance(obj, bool):
         return obj
     return obj is None
 
+
 def keys(obj):
     from py.clojure.lang.apersistentmap import APersistentMap
     return APersistentMap.KeySeq.create(obj)
 
+
 def vals(obj):
     from py.clojure.lang.apersistentmap import APersistentMap
     return APersistentMap.ValueSeq.create(obj)
+
 
 def fulfillsHashSet(obj):
     if not hasattr(obj, "__getitem__"):
@@ -75,6 +84,7 @@ def fulfillsHashSet(obj):
         return False
     return True
 
+
 def fulfillsIndexable(obj):
     if not hasattr(obj, "__getitem__"):
         return False
@@ -82,12 +92,14 @@ def fulfillsIndexable(obj):
         return False
     return True
 
-def list(*args):
+
+def list(*args):#FIXME: list is Python builtin
     from py.clojure.lang.persistentlist import EMPTY
     c = EMPTY
     for x in range(len(args) - 1, -1, -1):
         c = c.cons(args[x])
     return c
+
 
 def vector(*args):
     from py.clojure.lang.persistentvector import EMPTY
@@ -96,9 +108,11 @@ def vector(*args):
         c = c.cons(x)
     return c
 
-def map(*args):
+
+def map(*args):#FIXME: map is Python builtin
     from py.clojure.lang.persistenthashmap import EMPTY, PersistentHashMap
-    from py.clojure.lang.persistentarraymap import PersistentArrayMap, HASHTABLE_THRESHOLD
+    from py.clojure.lang.persistentarraymap import (PersistentArrayMap,
+                                                    HASHTABLE_THRESHOLD)
     if len(args) == 0:
         return EMPTY
     if len(args) == 1:
@@ -118,6 +132,7 @@ def map(*args):
         m = m.assoc(key, value)
     return m
 
+
 def getDefaultImports():
     from py.clojure.lang.symbol import Symbol
     from py.clojure.lang.persistentlist import PersistentList
@@ -130,9 +145,13 @@ def getDefaultImports():
          "clojure.lang.RT": sys.modules[__name__]}
     return d
 
+
 id = AtomicInteger()
+
+
 def nextID():
     return id.getAndIncrement()
+
 
 def subvec(v, start, end):
     from py.clojure.lang.persistentvector import EMPTY as EMPTY_VECTOR
@@ -143,11 +162,13 @@ def subvec(v, start, end):
         return EMPTY_VECTOR
     return SubVec(None, v, start, end)
 
+
 def init():
     global DEFAULT_IMPORTS
     DEFAULT_IMPORTS = map(getDefaultImports())
 
 DEFAULT_IMPORTS = None
+
 
 class DefaultComparator(Comparator):
     def compare(self, a, b):
